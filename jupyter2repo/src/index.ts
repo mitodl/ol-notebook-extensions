@@ -133,7 +133,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
         // but the user may not have adjusted the app settings yet to allow access to the specified repo.
         const proceed = await askUserConfirmation(
           'Confirm Permissions',
-          'Please confirm that you have granted the app access to the specified repo before continuing'
+          `Please confirm that you have granted the app access to the specified repo before continuing. This can be modified at ${ghAppUrl}`
         );
         if (proceed) {
           logMessage('Pushing requirements to repo');
