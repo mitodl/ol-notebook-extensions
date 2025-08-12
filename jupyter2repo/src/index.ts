@@ -35,11 +35,8 @@ import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
 
 let outputArea: OutputArea | null = null;
 
-/**
- * The extension plugin definition.
- */
 const plugin: JupyterFrontEndPlugin<void> = {
-  id: 'python-runner-extension',
+  id: 'jupyter2repo',
   autoStart: true,
   requires: [ICommandPalette, INotebookTracker, IRenderMimeRegistry],
   activate: (
@@ -52,7 +49,6 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
     const { commands } = app;
 
-    // Command to run Python code
     const commandId = 'python-runner:run';
     commands.addCommand(commandId, {
       label: 'Save Notebook to Github',
@@ -77,14 +73,13 @@ const plugin: JupyterFrontEndPlugin<void> = {
           return;
         }
 
-        // Create OutputArea model
+        // Create OutputArea model to use as a Log Panel.
         const model = new OutputAreaModel({ trusted: true });
         outputArea = new OutputArea({
           model,
           rendermime: rendermime
         });
 
-        // Wrap it in a MainAreaWidget
         const widget = new MainAreaWidget({ content: outputArea });
         widget.title.label = 'Log Panel';
         widget.title.closable = true;
