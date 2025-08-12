@@ -120,9 +120,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
         // TODO: We should skip this if we're already credentialed because it's definitely the most annoying part of the process
         // Could do this either by cloning the repo and attempting a push --dry-run or by snagging the access token from the temporary file or from the git config
         // Need to play around more with this
-
-        // TODO: This should just use the line magic cli option instead of calling main directly
-        const auth_command = `import gh_scoped_creds; gh_scoped_creds.main(['--client-id','${ghClientID}', '--github-app-url', '${ghAppUrl}'])`;
+        const auth_command = `!gh-scoped-creds --client-id='${ghClientID}' --github-app-url='${ghAppUrl}'`;
 
         const authFuture = session.kernel.requestExecute({
           code: auth_command
@@ -145,14 +143,14 @@ const plugin: JupyterFrontEndPlugin<void> = {
           // TODO: This hardcodes the version at python 3.11; we should probably derive this from whatever the kernel is running
           const gitCommands = `
         %%bash
-        git clone ${ghTargetRepo} ${targetDirectory}
-        cp ${notebookFilename} ${targetDirectory}/${notebookFilename}
+        git clone "${ghTargetRepo}" ${targetDirectory}
+        cp "${notebookFilename}" ${targetDirectory}/
         cd ${targetDirectory}
         pip freeze > requirements.txt
         echo $(python -c "import sys; print(f'python-{sys.version_info.major}.{sys.version_info.minor}')") > runtime.txt
         git add requirements.txt
         git add runtime.txt
-        git add ${notebookFilename}
+        git add "$(basename "${notebookFilename}")"
         echo 'Pushing to github'
         git commit -m 'Updating requirements.txt'
         git push origin main
