@@ -39,6 +39,8 @@ import {
 } from '@jupyterlab/services/lib/kernel/messages';
 
 let outputArea: OutputArea | null = null;
+const githubRepoRegex =
+  /^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+(?:\.git)?$/;
 
 const plugin: JupyterFrontEndPlugin<void> = {
   id: 'jupyter2repo',
@@ -113,6 +115,14 @@ const plugin: JupyterFrontEndPlugin<void> = {
           );
           return;
         }
+
+        if (ghTargetRepo !== null && !githubRepoRegex.test(ghTargetRepo)) {
+          logMessage(
+            'Repo must be a valid HTTPS Github repository url of the format "https://github.com/user/repo.git"'
+          );
+          return;
+        }
+
         logMessage(
           `Using client ID ${ghClientID} and URL ${ghAppUrl}. Will push to ${ghTargetRepo}`
         );
