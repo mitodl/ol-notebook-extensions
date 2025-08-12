@@ -32,6 +32,11 @@ import { UUID } from '@lumino/coreutils';
 import { OutputArea, OutputAreaModel } from '@jupyterlab/outputarea';
 
 import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
+import {
+  isErrorMsg,
+  isStreamMsg,
+  isExecuteResultMsg
+} from '@jupyterlab/services/lib/kernel/messages';
 
 let outputArea: OutputArea | null = null;
 
@@ -109,7 +114,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
           return;
         }
         logMessage(
-          `Using client ID ${ghAppUrl} and URL ${ghAppUrl}. Will push to ${ghTargetRepo}`
+          `Using client ID ${ghClientID} and URL ${ghAppUrl}. Will push to ${ghTargetRepo}`
         );
 
         // TODO: We should skip this if we're already credentialed because it's definitely the most annoying part of the process
@@ -117,8 +122,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
         // Need to play around more with this
 
         // TODO: This should just use the line magic cli option instead of calling main directly
-        const auth_command = `import gh_scoped_creds
-          gh_scoped_creds.main(['--client-id','${ghClientID}', '--github-app-url', '${ghAppUrl}'])`;
+        const auth_command = `import gh_scoped_creds; gh_scoped_creds.main(['--client-id','${ghClientID}', '--github-app-url', '${ghAppUrl}'])`;
 
         const authFuture = session.kernel.requestExecute({
           code: auth_command
@@ -145,7 +149,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
         cp ${notebookFilename} ${targetDirectory}/${notebookFilename}
         cd ${targetDirectory}
         pip freeze > requirements.txt
-        echo 'python-3.11' > runtime.txt
+        echo $(python -c "import sys; print(f'python-{sys.version_info.major}.{sys.version_info.minor}')") > runtime.txt
         git add requirements.txt
         git add runtime.txt
         git add ${notebookFilename}
@@ -176,14 +180,18 @@ const plugin: JupyterFrontEndPlugin<void> = {
 };
 
 const logToConsoleArea = (msg: KernelMessage.IIOPubMessage) => {
-  if (msg.header.msg_type === 'stream') {
-    logMessage((msg.content as any).text);
-  }
-  if (msg.header.msg_type === 'error') {
-    logMessage((msg.content as any).text);
-  }
-  if (msg.header.msg_type === 'execute_result') {
-    logMessage((msg.content as any).text);
+  if (isStreamMsg(msg)) {
+    logMessage((msg as KernelMessage.IStreamMsg).content.text);
+  } else if (isErrorMsg(msg)) {
+    const errorMessage = msg as KernelMessage.IErrorMsg;
+    const { ename, evalue, traceback } = errorMessage.content;
+    const errorText = `${ename}: ${evalue}\n${traceback.join('\n')}`;
+    logMessage(errorText);
+  } else if (isExecuteResultMsg(msg)) {
+    const content = (msg as KernelMessage.IExecuteResultMsg).content;
+    if (content.data['text/plain']) {
+      logMessage(content.data['text/plain'] as string);
+    }
   }
 };
 
