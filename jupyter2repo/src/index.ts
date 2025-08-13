@@ -184,7 +184,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
         git add "$(basename "${notebookFilename}")"
         git add datasets
         echo 'Pushing to github'
-        git commit -m 'Updating requirements.txt'
+        git commit -m 'Update from notebook ${notebookFilename}'
         git push origin main
         echo 'Cleaning up checkout'
         cd ..
