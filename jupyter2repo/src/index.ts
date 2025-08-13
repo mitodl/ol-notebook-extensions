@@ -39,8 +39,12 @@ import {
 } from '@jupyterlab/services/lib/kernel/messages';
 
 let outputArea: OutputArea | null = null;
+// TODO: This will need to be changed to support enterprise GH
+const githubAppRegex = /^https:\/\/github\.com\/apps\/[a-z0-9-]+\/?$/;
 const githubRepoRegex =
   /^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+(?:\.git)?$/;
+// TODO: Couldn't easily find what the format of a client ID is. This matches mine, but we should check around a bit more
+const githubAppClientIdRegex = /^Iv[0-9A-Za-z]{10,40}$/;
 const GH_APP_ID_SETTING_KEY = 'GH_APP_ID';
 const GH_URL_SETTING_KEY = 'GH_APP_URL';
 const PLUGIN_ID = 'jupyter2repo:plugin';
@@ -111,6 +115,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
           title: 'Provide repo to push requirements to'
         });
         const ghTargetRepo = ghTargetRepoResponse.value;
+        // TODO: Pull all these validations into a function
         if (![ghClientID, ghAppUrl, ghTargetRepo].every(isNotEmpty)) {
           logMessage(
             'All fields must be filled out in order to save notebook.'
@@ -121,6 +126,20 @@ const plugin: JupyterFrontEndPlugin<void> = {
         if (ghTargetRepo !== null && !githubRepoRegex.test(ghTargetRepo)) {
           logMessage(
             'Repo must be a valid HTTPS Github repository url of the format "https://github.com/user/repo.git"'
+          );
+          return;
+        }
+
+        if (ghAppUrl !== null && !githubAppRegex.test(ghAppUrl)) {
+          logMessage(
+            'App URL must be a valid HTTPS public Github app url of the format "https://github.com/apps/app-slug"'
+          );
+          return;
+        }
+
+        if (ghClientID !== null && !githubAppClientIdRegex.test(ghClientID)) {
+          logMessage(
+            'Malformed client ID, please check your settings and try again.'
           );
           return;
         }
@@ -156,12 +175,14 @@ const plugin: JupyterFrontEndPlugin<void> = {
         %%bash
         git clone "${ghTargetRepo}" ${targetDirectory}
         cp "${notebookFilename}" ${targetDirectory}/
+        cp -R datasets ${targetDirectory}
         cd ${targetDirectory}
         pip freeze > requirements.txt
         echo $(python -c "import sys; print(f'python-{sys.version_info.major}.{sys.version_info.minor}')") > runtime.txt
         git add requirements.txt
         git add runtime.txt
         git add "$(basename "${notebookFilename}")"
+        git add datasets
         echo 'Pushing to github'
         git commit -m 'Updating requirements.txt'
         git push origin main
