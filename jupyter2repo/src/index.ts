@@ -188,7 +188,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
         git push origin main
         echo 'Cleaning up checkout'
         cd ..
-        rm -rf ${targetDirectory} 
+        [ -n "${targetDirectory}" ] && rm -rf "${targetDirectory}"
         
         `;
 
