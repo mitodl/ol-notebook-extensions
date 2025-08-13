@@ -1,0 +1,22 @@
+{
+  "jupyter.lab.setting-icon": "ui-components:save",
+  "jupyter.lab.setting-icon-label": "Jupyter2Repo",
+  "title": "Jupyter2Repo Settings",
+  "description": "Settings for the Jupyter2Repo extension",
+  "type": "object",
+  "properties": {
+    "GH_APP_ID": {
+      "type": ["string"],
+      "title": "GitHub App ID",
+      "readOnly": true,
+      "default": "test"
+    },
+    "GH_APP_URL": {
+      "type": ["string"],
+      "title": "GitHub App URL",
+      "readOnly": true,
+      "default": "test2"
+    }
+  },
+  "additionalProperties": false
+}

@@ -30,6 +30,7 @@ import { INotebookTracker } from '@jupyterlab/notebook';
 import { KernelMessage } from '@jupyterlab/services';
 import { UUID } from '@lumino/coreutils';
 import { OutputArea, OutputAreaModel } from '@jupyterlab/outputarea';
+import { ISettingRegistry } from '@jupyterlab/settingregistry';
 
 import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
 import {
@@ -41,30 +42,42 @@ import {
 let outputArea: OutputArea | null = null;
 const githubRepoRegex =
   /^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+(?:\.git)?$/;
+const GH_APP_ID_SETTING_KEY = 'GH_APP_ID';
+const GH_URL_SETTING_KEY = 'GH_APP_URL';
+const PLUGIN_ID = 'jupyter2repo:plugin';
 
 const plugin: JupyterFrontEndPlugin<void> = {
-  id: 'jupyter2repo',
+  id: PLUGIN_ID, // TODO: Not sure if this is the best naming scheme, but there's some requirements around its structure matching settings schema
   autoStart: true,
-  requires: [ICommandPalette, INotebookTracker, IRenderMimeRegistry],
+  requires: [
+    ICommandPalette,
+    INotebookTracker,
+    IRenderMimeRegistry,
+    ISettingRegistry
+  ],
   activate: (
     app: JupyterFrontEnd,
     palette: ICommandPalette,
     tracker: INotebookTracker,
-    rendermime: IRenderMimeRegistry
+    rendermime: IRenderMimeRegistry,
+    settingRegistry: ISettingRegistry
   ) => {
     console.log('Jupyter2Repo extension is activated!');
-
     const { commands } = app;
 
     const commandId = 'python-runner:run';
     commands.addCommand(commandId, {
       label: 'Save Notebook to Github',
       execute: async () => {
+        const settings = await settingRegistry.load(PLUGIN_ID);
+        const ghClientID = settings.get(GH_APP_ID_SETTING_KEY)
+          .composite as string;
+        const ghAppUrl = settings.get(GH_URL_SETTING_KEY).composite as string;
         const current = tracker.currentWidget;
         if (!current) {
           await showDialog({
             title: 'Warning',
-            body: 'No active notebook - cannot save.'
+            body: 'No active notebook - cannot.'
           });
           return;
         }
@@ -80,6 +93,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
           return;
         }
 
+        //TODO - pull this log panel init into it's own function
         // Create OutputArea model to use as a Log Panel.
         const model = new OutputAreaModel({ trusted: true });
         outputArea = new OutputArea({
@@ -93,17 +107,6 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
         // Show panel immediately on startup
         app.shell.add(widget, 'main');
-
-        const ghClientIDResponse = await InputDialog.getText({
-          title: 'Provide client ID for preconfigured GH app'
-        });
-
-        const ghClientID = ghClientIDResponse.value;
-
-        const ghAppUrlResponse = await InputDialog.getText({
-          title: 'Provide public app URL'
-        });
-        const ghAppUrl = ghAppUrlResponse.value;
 
         const ghTargetRepoResponse = await InputDialog.getText({
           title: 'Provide repo to push requirements to'
