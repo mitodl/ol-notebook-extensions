@@ -9,8 +9,7 @@
  *
  * Limitations:
  * - This only persists the active notebook and running kernel's python requirements.txt
- * - This assumes that all jupyter runtimes are Python 3.13.
- * - The three persisted files are stored in the root of the target repo, meaning that right now this can only store 1 notebook per repo
+ * - The three persisted files are stored in the root of the target repo
  * - No provisions for data file storage
  */
 
@@ -77,7 +76,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
         if (!current) {
           await showDialog({
             title: 'Warning',
-            body: 'No active notebook - cannot.'
+            body: 'No active notebook - cannot save.'
           });
           return;
         }
@@ -153,7 +152,6 @@ const plugin: JupyterFrontEndPlugin<void> = {
         if (proceed) {
           logMessage('Pushing requirements to repo');
           const targetDirectory = UUID.uuid4();
-          // TODO: This hardcodes the version at python 3.11; we should probably derive this from whatever the kernel is running
           const gitCommands = `
         %%bash
         git clone "${ghTargetRepo}" ${targetDirectory}
