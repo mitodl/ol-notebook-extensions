@@ -1,0 +1,5 @@
+{
+  "packageManager": "python",
+  "packageName": "ol_themed_jupyter",
+  "uninstallInstructions": "Use your Python package manager (pip, conda, etc.) to uninstall the package ol_themed_jupyter"
+}
