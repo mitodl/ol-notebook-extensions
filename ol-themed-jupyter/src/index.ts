@@ -15,24 +15,7 @@ export const mitJupyterIcon = new LabIcon({
 /**
  * Initialization data for the ol-themed-jupyter extension.
  */
-/*const plugin = {
-  id: 'ol-themed-jupyter:plugin',
-  description: 'Provides MIT OpenLearning themes for Jupyter',
-  autoStart: true,
-  requires: [ILabShell],
-  activate: (app: JupyterFrontEnd, shell: ILabShell) => {
-    const logo = new Widget();
-    mitJupyterIcon.element({
-      container: logo.node,
-      elementPosition: 'center',
-      margin: '2px 2px 2px 2px',
-      height: 'auto',
-      width: '32px'
-    });
-    logo.id = 'jp-MainLogo';
-    shell.add(logo, 'top', { rank: 0 });
-  }
-};*/
+
 const plugin: JupyterFrontEndPlugin<void> = {
   id: 'ol-themed-jupyter:plugin',
   description: 'Provides MIT OpenLearning themes for Jupyter',
