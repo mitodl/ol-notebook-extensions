@@ -21,9 +21,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
   description: 'Provides MIT OpenLearning themes for Jupyter',
   autoStart: true,
   activate: (app: JupyterFrontEnd) => {
-    const baseUrl = PageConfig.getBaseUrl();
     const node = document.createElement('a');
-    node.href = `${baseUrl}tree`;
+    node.href = `https://learn.mit.edu/dashboard`;
     node.target = '_blank';
     node.rel = 'noopener noreferrer';
     const logo = new Widget({ node });
