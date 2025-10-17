@@ -4,7 +4,6 @@ import {
 } from '@jupyterlab/application';
 import { LabIcon } from '@jupyterlab/ui-components';
 import { Widget } from '@lumino/widgets';
-import { PageConfig } from '@jupyterlab/coreutils';
 // @ts-expect-error: Suppressing extraneous error
 import mitJupyterSvgStr from '../style/logo.svg';
 
