@@ -1,6 +1,6 @@
 {
     "name": "ol-themed-jupyter",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "Provides MIT OpenLearning themes for Jupyter",
     "keywords": [
         "jupyter",
