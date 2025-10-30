@@ -1,0 +1,8 @@
+{
+  "jupyter.lab.shortcuts": [],
+  "title": "ol-jupyter-authoring",
+  "description": "ol-jupyter-authoring settings.",
+  "type": "object",
+  "properties": {},
+  "additionalProperties": false
+}
