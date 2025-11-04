@@ -11,7 +11,7 @@ import tornado
 
 # TODO: We need to set up a real bucket before we can set this
 # Can pull from env var in the meantime.
-NOTEBOOK_BUCKET = os.environ.get("NOTEBOOK_BUCKET")
+NOTEBOOK_BUCKET = os.environ.get('NOTEBOOK_BUCKET')
 
 
 class SaveToS3Handler(APIHandler):
@@ -55,7 +55,7 @@ class SaveToS3Handler(APIHandler):
             archive_start = time.time()
             filename, archive = self._get_workspace_directory_archive()
             archive_end = time.time()
-            self.log.info("Created workspace archive in %.2f seconds", archive_end - archive_start)
+            self.log.info('Created workspace archive in %.2f seconds', archive_end - archive_start)
 
             # We need to think through how auth plugs in here so I can read the current user in a semi-secure way
             current_username = self.current_user.username
@@ -68,21 +68,21 @@ class SaveToS3Handler(APIHandler):
             self.sync_file_to_s3(filename, NOTEBOOK_BUCKET, s3_key)
             s3_sync_end = time.time()
 
-            self.log.info("Synced workspace archive to S3 in %.2f seconds", s3_sync_end - s3_sync_start)
+            self.log.info('Synced workspace archive to S3 in %.2f seconds', s3_sync_end - s3_sync_start)
             self.cleanup_tar_file(filename)
 
             self.finish(json.dumps({
-                "data": ("Saved {} to S3 at {}".format(self.settings.get('serverapp').root_dir, s3_key)),
+                'data': ('Saved {} to S3 at {}'.format(self.settings.get('serverapp').root_dir, s3_key)),
             }))
         except Exception as e:
             self.finish(json.dumps({'error': str(e)}))
 
 
 def setup_route_handlers(web_app):
-    host_pattern = ".*$"
-    base_url = web_app.settings["base_url"]
+    host_pattern = '.*$'
+    base_url = web_app.settings['base_url']
 
-    s3_save_pattern = url_path_join(base_url, "ol-jupyter-authoring", "s3-save")
+    s3_save_pattern = url_path_join(base_url, 'ol-jupyter-authoring', 's3-save')
     handlers = [(s3_save_pattern, SaveToS3Handler)]
 
     web_app.add_handlers(host_pattern, handlers)
