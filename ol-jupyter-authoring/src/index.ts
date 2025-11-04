@@ -2,7 +2,7 @@ import {
   JupyterFrontEnd,
   JupyterFrontEndPlugin
 } from '@jupyterlab/application';
-
+import { InputDialog } from '@jupyterlab/apputils';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
 import { IMainMenu } from '@jupyterlab/mainmenu';
 import { requestAPI } from './request';
@@ -48,9 +48,13 @@ const plugin: JupyterFrontEndPlugin<void> = {
     }
     app.commands.addCommand(CommandIDs.saveToS3, {
       label: 'Save to S3',
-      execute: args => {
+      execute: async args => {
         console.log('Save to S3 command executed with args:', args);
-        requestAPI<any>('s3-save')
+        const courseName = await InputDialog.getText({
+          title: 'Enter Course Name'
+        });
+
+        requestAPI<any>(`s3-save?course=${courseName.value}`)
           .then(data => {
             console.log(data);
           })

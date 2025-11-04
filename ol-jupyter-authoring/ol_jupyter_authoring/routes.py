@@ -2,6 +2,7 @@ import json
 import tarfile
 import uuid
 import os
+import time
 
 from jupyter_server.base.handlers import APIHandler
 from jupyter_server.utils import url_path_join
@@ -9,6 +10,7 @@ import boto3
 import tornado
 
 NOTEBOOK_BUCKET = ''
+
 
 class SaveToS3Handler(APIHandler):
     # The following decorator should be present on all verb methods (head, get, post,
@@ -41,23 +43,31 @@ class SaveToS3Handler(APIHandler):
         - Compress an archive of entire workspace
         - Upload the archive to S3
         - Return S3 URL to client?
+        - Clean up local archive file
         '''
 
-        cleanup = False # TODO: Once we're done testing, we can drop this flag and always clean up
+        cleanup = True # TODO: Once we're done testing, we can drop these flag and always clean up
+        upload = False
+
+        archive_start = time.time()
         filename, archive = self._get_workspace_directory_archive()
-        # TODO: Right now this is probably not gonna work out of box.
+        archive_end = time.time()
+        self.log.info("Created workspace archive in %.2f seconds", archive_end - archive_start)
         # We need to think through how auth plugs in here so I can read the current user in a semi-secure way
         current_username = self.current_user.username
         # Ideally the course name will be populated automatically if you start from a WIP course
-        # We'll allow users to override it if necessary. Need UI to do this.
-        # TODO: Pipe a "course name" argument in from the client.
-        course_name = 'default_course'
+        # But we'll allow users to override it if necessary
+        course_name = self.get_argument('course','default_course')
         s3_key = f'{current_username}/{course_name}'
-        self.sync_file_to_s3(filename, NOTEBOOK_BUCKET, s3_key)
+        s3_sync_start = time.time()
+        if upload:
+            self.sync_file_to_s3(filename, NOTEBOOK_BUCKET, s3_key)
+        s3_sync_end = time.time()
+        self.log.info("Synced workspace archive to S3 in %.2f seconds", s3_sync_end - s3_sync_start)
         if cleanup:
             self.cleanup_tar_file(filename)
         self.finish(json.dumps({
-            "data": ( "Saved {} to S3".format(self.settings.get('serverapp').root_dir)),
+            "data": ( "Saved {} to S3 at {}".format(self.settings.get('serverapp').root_dir, s3_key)),
         }))
 
 
