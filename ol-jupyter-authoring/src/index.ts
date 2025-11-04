@@ -65,12 +65,13 @@ const plugin: JupyterFrontEndPlugin<void> = {
           return;
         }
 
+        // TODO: Required doesn't actually stop you from pressing OK with no text...
         const courseName = await InputDialog.getText({
           title: 'Enter Course Name',
           required: true
         });
 
-        if (!courseName.button.accept) {
+        if (!courseName.button.accept || !courseName.value) {
           // If they select cancel, don't attempt to upload to S3
           return;
         }
