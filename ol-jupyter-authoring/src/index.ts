@@ -66,7 +66,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
         }
 
         const courseName = await InputDialog.getText({
-          title: 'Enter Course Name'
+          title: 'Enter Course Name',
+          required: true
         });
 
         if (!courseName.button.accept) {

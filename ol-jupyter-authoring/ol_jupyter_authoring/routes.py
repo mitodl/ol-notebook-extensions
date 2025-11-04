@@ -9,7 +9,9 @@ from jupyter_server.utils import url_path_join
 import boto3
 import tornado
 
-NOTEBOOK_BUCKET = 'ol-devops-sandbox'
+# TODO: We need to set up a real bucket before we can set this
+# Can pull from env var if we want these segmented per-environment.
+NOTEBOOK_BUCKET = ''
 
 
 class SaveToS3Handler(APIHandler):
