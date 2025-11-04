@@ -40,6 +40,8 @@ class SaveToS3Handler(APIHandler):
     def cleanup_tar_file(self, filename):
         os.remove(filename)
 
+    # TODO: Could make async. This is a potentially long-running operation
+    # TODO: Could make a POST. GET isn't really appropriate for an operation that modifies state
     @tornado.web.authenticated
     def get(self):
 
