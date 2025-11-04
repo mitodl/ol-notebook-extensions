@@ -10,8 +10,8 @@ import boto3
 import tornado
 
 # TODO: We need to set up a real bucket before we can set this
-# Can pull from env var if we want these segmented per-environment.
-NOTEBOOK_BUCKET = ''
+# Can pull from env var in the meantime.
+NOTEBOOK_BUCKET = os.environ.get("NOTEBOOK_BUCKET")
 
 
 class SaveToS3Handler(APIHandler):
