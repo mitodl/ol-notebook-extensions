@@ -21,6 +21,8 @@ class SaveToS3Handler(APIHandler):
         # Get the workspace directory (Jupyter server root)
         # TODO: We may need to do more here if we decide not to expose the Dockerfile and requirements files
         # This might involve cramming a requirements file in a hidden subdirectory before archiving
+        # In general, we're going to persist hidden directories with this command
+        # but we'll drop anything we don't expressly add in the dockerfile (i.e. .ipynb_checkpoints)
         workspace_dir = self.settings.get('serverapp').root_dir
         filename = '{}.tar.gz'.format(uuid.uuid4())
         tar = tarfile.open(filename, mode='w:gz')

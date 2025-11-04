@@ -55,10 +55,24 @@ const plugin: JupyterFrontEndPlugin<void> = {
       label: 'Save to S3',
       execute: async args => {
         console.log('Save to S3 command executed with args:', args);
-        // TODO: Need to prompt users to save and let them exit if they haven't
+        const confirmedSave = await showDialog({
+          title: 'Save to S3',
+          body: "Please ensure you've saved your work before continuing with upload.",
+          buttons: [Dialog.okButton(), Dialog.cancelButton()]
+        });
+
+        if (!confirmedSave.button.accept) {
+          return;
+        }
+
         const courseName = await InputDialog.getText({
           title: 'Enter Course Name'
         });
+
+        if (!courseName.button.accept) {
+          // If they select cancel, don't attempt to upload to S3
+          return;
+        }
 
         requestAPI<any>(`s3-save?course=${courseName.value}`)
           .then(data => {
