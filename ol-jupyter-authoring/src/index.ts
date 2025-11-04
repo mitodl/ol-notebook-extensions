@@ -2,7 +2,12 @@ import {
   JupyterFrontEnd,
   JupyterFrontEndPlugin
 } from '@jupyterlab/application';
-import { InputDialog } from '@jupyterlab/apputils';
+import {
+  InputDialog,
+  showDialog,
+  showErrorMessage,
+  Dialog
+} from '@jupyterlab/apputils';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
 import { IMainMenu } from '@jupyterlab/mainmenu';
 import { requestAPI } from './request';
@@ -50,17 +55,27 @@ const plugin: JupyterFrontEndPlugin<void> = {
       label: 'Save to S3',
       execute: async args => {
         console.log('Save to S3 command executed with args:', args);
+        // TODO: Need to prompt users to save and let them exit if they haven't
         const courseName = await InputDialog.getText({
           title: 'Enter Course Name'
         });
 
         requestAPI<any>(`s3-save?course=${courseName.value}`)
           .then(data => {
+            // TODO: Need to handle well-formed errors from the server
+            // This catch will only work if there's an unhandled error
+            showDialog({
+              title: 'Save to S3',
+              body: 'Notebook saved to S3 successfully.',
+              buttons: [Dialog.okButton()]
+            });
             console.log(data);
           })
           .catch(reason => {
-            console.error(
-              `The ol_jupyter_authoring server extension appears to be missing.\n${reason}`
+            showErrorMessage(
+              'Save to S3 Failed',
+              `Failed to save notebook to S3. See console for details.\n${reason}`,
+              [Dialog.okButton()]
             );
           });
       }
