@@ -85,7 +85,6 @@ const plugin: JupyterFrontEndPlugin<void> = {
               );
               return;
             } else {
-              // This catch will only work if there's an unhandled error
               showDialog({
                 title: 'Save to S3',
                 body: 'Notebook saved to S3 successfully.',
@@ -95,6 +94,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
             }
           })
           .catch(reason => {
+            // This block covers unhandled errors.
             showErrorMessage(
               'Save to S3 Failed',
               `Failed to save notebook to S3. See console for details. \n${reason}`,
