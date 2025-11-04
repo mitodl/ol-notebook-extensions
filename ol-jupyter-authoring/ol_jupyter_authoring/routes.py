@@ -31,7 +31,7 @@ class SaveToS3Handler(APIHandler):
         return os.path.join(workspace_dir, filename), tar
 
     def sync_file_to_s3(self, local_file_path, bucket_name, s3_key):
-        # TODO: This only runs if AWS credentials are discoverable on the server (i.e. .credentials or IAM role)
+        # This only functions if AWS credentials are discoverable on the server (i.e. .credentials or IAM role)
         s3 = boto3.client('s3')
         s3.upload_file(local_file_path, bucket_name, s3_key)
 
@@ -49,34 +49,30 @@ class SaveToS3Handler(APIHandler):
         - Clean up local archive file
         '''
 
-        cleanup = True # TODO: Once we're done testing, we can drop these flag and always clean up
-        upload = True
-
         try:
             archive_start = time.time()
             filename, archive = self._get_workspace_directory_archive()
             archive_end = time.time()
             self.log.info("Created workspace archive in %.2f seconds", archive_end - archive_start)
+
             # We need to think through how auth plugs in here so I can read the current user in a semi-secure way
             current_username = self.current_user.username
+
             # Ideally the course name will be populated automatically if you start from a WIP course
             # But we'll allow users to override it if necessary
             course_name = self.get_argument('course','default_course')
             s3_key = f'ol-jupyter-courses/{current_username}/{course_name}.tar.gz'
             s3_sync_start = time.time()
-            if upload:
-                self.sync_file_to_s3(filename, NOTEBOOK_BUCKET, s3_key)
+            self.sync_file_to_s3(filename, NOTEBOOK_BUCKET, s3_key)
             s3_sync_end = time.time()
-            self.log.info("Synced workspace archive to S3 in %.2f seconds", s3_sync_end - s3_sync_start)
 
-            if cleanup:
-                self.cleanup_tar_file(filename)
+            self.log.info("Synced workspace archive to S3 in %.2f seconds", s3_sync_end - s3_sync_start)
+            self.cleanup_tar_file(filename)
 
             self.finish(json.dumps({
                 "data": ("Saved {} to S3 at {}".format(self.settings.get('serverapp').root_dir, s3_key)),
             }))
         except Exception as e:
-            # TODO: Need to figure out what the idiomatic approach for error handling is in Jupyter
             self.finish(json.dumps({'error': str(e)}))
 
 

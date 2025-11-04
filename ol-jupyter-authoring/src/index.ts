@@ -76,21 +76,31 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
         requestAPI<any>(`s3-save?course=${courseName.value}`)
           .then(data => {
-            // TODO: Need to handle well-formed errors from the server
-            // This catch will only work if there's an unhandled error
-            showDialog({
-              title: 'Save to S3',
-              body: 'Notebook saved to S3 successfully.',
-              buttons: [Dialog.okButton()]
-            });
-            console.log(data);
+            if (data.error) {
+              console.log('Error saving to S3:', data.error);
+              showErrorMessage(
+                'Save to S3 Failed',
+                `Failed to save notebook to S3. See console for details. \n${data.error}`,
+                [Dialog.okButton()]
+              );
+              return;
+            } else {
+              // This catch will only work if there's an unhandled error
+              showDialog({
+                title: 'Save to S3',
+                body: 'Notebook saved to S3 successfully.',
+                buttons: [Dialog.okButton()]
+              });
+              console.log(data);
+            }
           })
           .catch(reason => {
             showErrorMessage(
               'Save to S3 Failed',
-              `Failed to save notebook to S3. See console for details.\n${reason}`,
+              `Failed to save notebook to S3. See console for details. \n${reason}`,
               [Dialog.okButton()]
             );
+            return;
           });
       }
     });
