@@ -2,42 +2,120 @@ import {
   JupyterFrontEnd,
   JupyterFrontEndPlugin
 } from '@jupyterlab/application';
-
+import {
+  InputDialog,
+  showDialog,
+  showErrorMessage,
+  Dialog
+} from '@jupyterlab/apputils';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
-
+import { IMainMenu } from '@jupyterlab/mainmenu';
 import { requestAPI } from './request';
 
 /**
  * Initialization data for the ol-jupyter-authoring extension.
  */
+
+namespace CommandIDs {
+  export const saveToS3 = 'ol-jupyter-authoring:s3-save';
+}
+
 const plugin: JupyterFrontEndPlugin<void> = {
   id: 'ol-jupyter-authoring:plugin',
-  description: 'Jupyter authoring extension for OpenLearning-hosted Jupyter notebooks ',
+  description:
+    'Jupyter authoring extension for OpenLearning-hosted Jupyter notebooks ',
   autoStart: true,
+  requires: [IMainMenu],
   optional: [ISettingRegistry],
-  activate: (app: JupyterFrontEnd, settingRegistry: ISettingRegistry | null) => {
+  activate: (
+    app: JupyterFrontEnd,
+    mainMenu: IMainMenu,
+    settingRegistry: ISettingRegistry | null
+  ) => {
     console.log('JupyterLab extension ol-jupyter-authoring is activated!');
 
     if (settingRegistry) {
       settingRegistry
         .load(plugin.id)
         .then(settings => {
-          console.log('ol-jupyter-authoring settings loaded:', settings.composite);
+          console.log(
+            'ol-jupyter-authoring settings loaded:',
+            settings.composite
+          );
+          // This shouldn't be necessary long term, but for testing it may be useful to keep settings user editable.
         })
         .catch(reason => {
-          console.error('Failed to load settings for ol-jupyter-authoring.', reason);
+          console.error(
+            'Failed to load settings for ol-jupyter-authoring.',
+            reason
+          );
         });
     }
+    app.commands.addCommand(CommandIDs.saveToS3, {
+      label: 'Save to S3',
+      execute: async args => {
+        console.log('Save to S3 command executed with args:', args);
+        const confirmedSave = await showDialog({
+          title: 'Save to S3',
+          body: "Please ensure you've saved your work before continuing with upload.",
+          buttons: [Dialog.okButton(), Dialog.cancelButton()]
+        });
 
-    requestAPI<any>('hello')
-      .then(data => {
-        console.log(data);
-      })
-      .catch(reason => {
-        console.error(
-          `The ol_jupyter_authoring server extension appears to be missing.\n${reason}`
-        );
-      });
+        if (!confirmedSave.button.accept) {
+          return;
+        }
+
+        // TODO: Required doesn't actually stop you from pressing OK with no text...
+        const courseName = await InputDialog.getText({
+          title: 'Enter Course Name',
+          required: true
+        });
+
+        if (!courseName.button.accept || !courseName.value) {
+          // If they select cancel, don't attempt to upload to S3
+          return;
+        }
+
+        requestAPI<any>(`s3-save?course=${courseName.value}`, {
+          method: 'POST'
+        })
+          .then(data => {
+            if (data.error) {
+              console.log('Error saving to S3:', data.error);
+              showErrorMessage(
+                'Save to S3 Failed',
+                `Failed to save notebook to S3. See console for details. \n${data.error}`,
+                [Dialog.okButton()]
+              );
+              return;
+            } else {
+              showDialog({
+                title: 'Save to S3',
+                body: 'Notebook saved to S3 successfully.',
+                buttons: [Dialog.okButton()]
+              });
+              console.log(data);
+            }
+          })
+          .catch(reason => {
+            // This block covers unhandled errors.
+            showErrorMessage(
+              'Save to S3 Failed',
+              `Failed to save notebook to S3. See console for details. \n${reason}`,
+              [Dialog.okButton()]
+            );
+            return;
+          });
+      }
+    });
+    mainMenu.fileMenu.addGroup(
+      [
+        {
+          command: CommandIDs.saveToS3
+        }
+      ],
+      40
+    );
   }
 };
 
