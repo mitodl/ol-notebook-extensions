@@ -43,7 +43,7 @@ class SaveToS3Handler(APIHandler):
     # TODO: Could make async. This is a potentially long-running operation
     # TODO: Could make a POST. GET isn't really appropriate for an operation that modifies state
     @tornado.web.authenticated
-    def get(self):
+    async def post(self):
 
         '''
         Saves workspace to an S3 bucket. **This is currently synchronous**
@@ -73,11 +73,11 @@ class SaveToS3Handler(APIHandler):
             self.log.info('Synced workspace archive to S3 in %.2f seconds', s3_sync_end - s3_sync_start)
             self.cleanup_tar_file(filename)
 
-            self.finish(json.dumps({
+            await self.finish(json.dumps({
                 'data': ('Saved {} to S3 at {}'.format(self.settings.get('serverapp').root_dir, s3_key)),
             }))
         except Exception as e:
-            self.finish(json.dumps({'error': str(e)}))
+            await self.finish(json.dumps({'error': str(e)}))
 
 
 def setup_route_handlers(web_app):

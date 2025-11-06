@@ -17,7 +17,7 @@ import { requestAPI } from './request';
  */
 
 namespace CommandIDs {
-  export const saveToS3 = 'filebrowser:s3-save';
+  export const saveToS3 = 'ol-jupyter-authoring:s3-save';
 }
 
 const plugin: JupyterFrontEndPlugin<void> = {
@@ -76,7 +76,9 @@ const plugin: JupyterFrontEndPlugin<void> = {
           return;
         }
 
-        requestAPI<any>(`s3-save?course=${courseName.value}`)
+        requestAPI<any>(`s3-save?course=${courseName.value}`, {
+          method: 'POST'
+        })
           .then(data => {
             if (data.error) {
               console.log('Error saving to S3:', data.error);
