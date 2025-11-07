@@ -28,7 +28,7 @@ class SaveToS3Handler(APIHandler):
         workspace_dir = self.settings.get('serverapp').root_dir
         filename = '{}.tar.gz'.format(uuid.uuid4())
         tar = tarfile.open(filename, mode='w:gz')
-        tar.add(workspace_dir, arcname=os.path.basename(workspace_dir))
+        tar.add(workspace_dir, arcname='')
         tar.close()
         return os.path.join(workspace_dir, filename), tar
 
