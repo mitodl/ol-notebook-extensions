@@ -1,6 +1,6 @@
 {
     "name": "ol-jupyter-authoring",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "Jupyter authoring extension for OpenLearning-hosted Jupyter notebooks ",
     "keywords": [
         "jupyter",
