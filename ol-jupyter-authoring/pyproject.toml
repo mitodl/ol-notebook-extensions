@@ -48,7 +48,7 @@ fields = ["description", "authors", "keywords"]
 
 [tool.hatch.build.targets.sdist]
 artifacts = ["ol_jupyter_authoring/labextension"]
-exclude = [".github", "binder"]
+exclude = [".github", "binder", "node_modules"]
 
 [tool.hatch.build.targets.wheel.shared-data]
 "ol_jupyter_authoring/labextension" = "share/jupyter/labextensions/ol-jupyter-authoring"
