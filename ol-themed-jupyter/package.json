@@ -60,7 +60,7 @@
     "devDependencies": {
         "@jupyterlab/builder": "4.5.0",
         "@types/json-schema": "7.0.15",
-        "@types/react": "^18.0.26",
+        "@types/react": "18.3.27",
         "@types/react-addons-linked-state-mixin": "0.14.27",
         "@typescript-eslint/eslint-plugin": "6.21.0",
         "@typescript-eslint/parser": "6.21.0",
