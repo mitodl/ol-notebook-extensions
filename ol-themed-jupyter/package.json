@@ -68,7 +68,7 @@
         "eslint": "9.39.1",
         "eslint-config-prettier": "10.1.8",
         "eslint-plugin-prettier": "5.5.4",
-        "npm-run-all2": "8.0.4",
+        "npm-run-all2": "9.0.4",
         "prettier": "3.6.2",
         "rimraf": "6.1.2",
         "source-map-loader": "5.0.0",
